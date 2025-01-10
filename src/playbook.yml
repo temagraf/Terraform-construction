@@ -1,0 +1,23 @@
+---
+- name: Install NGINX (with wait for 22)
+  gather_facts: false
+  hosts: webservers
+  vars:
+    ansible_user: ubuntu
+  become: true
+  tasks:
+    - name: Wait 60 seconds for port 22 to become open and contain "OpenSSH"
+      ansible.builtin.wait_for:
+        port: 22
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        search_regex: OpenSSH
+        delay: 60
+      connection: local
+      become: false
+
+    - name: Install Nginx Web Server on Debian Family
+      become: true
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+        update_cache: yes
